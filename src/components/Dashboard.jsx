@@ -1,30 +1,104 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import "./Dashboard.css";
 import Sidebar from "./Sidebar";
 import Header from "./Header.jsx";
 import Task from "./Task.jsx";
-import { getTasks } from "../services/taskService.js";
+import {
+  updateTask,
+  getTasks,
+  deleteTask as deleteTaskApi,
+  toggleTaskCompletion,
+} from "../services/taskService.js";
+import { getPersons } from "../services/person.js";
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
   const [tasks, setTasks] = useState([]);
+  const [usersCount, setUsersCount] = useState(0);
+  const [showAll, setShowAll] = useState(false);
+
+
 
   useEffect(() => {
-    getTasks().then((res) => setTasks(res.data));
+    getTasks().then((res) => {
+      const normalized = res.data.map((task) => ({
+        ...task,
+
+        status: task.completed ? "completed" : "pending",
+        dueDate: task.dueDate || task.due_date,
+        team: task.team || "General",
+      }));
+
+      setTasks(normalized);
+    });
   }, []);
 
-  const pandingCount = tasks.filter(
-    (task) => task.status === "pending"
-    ).length;
+  const pendingCount = tasks.filter((task) => task.status === "pending").length;
   const inProgressCount = tasks.filter(
     (task) => task.status === "in-progress"
-    ).length;
-    const completedCount = tasks.filter((task) => task.status === "completed").length;
-    const overdueTasksCount = tasks.filter(
-      (task) => new Date(task.dueDate) < new Date() && task.status !== "completed"
-    ).length;
-    
+  ).length;
+  const completedCount = tasks.filter(
+    (task) => task.status === "completed"
+  ).length;
+  const overdueTasksCount = tasks.filter(
+    (task) => new Date(task.dueDate) < new Date() && task.status !== "completed"
+  ).length;
+
+  const markComplete = async (taskId) => {
+  try {
+    await toggleTaskCompletion(taskId);
+
+    setTasks((prevTasks) =>
+      prevTasks.map((t) =>
+        t.id === taskId
+          ? { ...t, completed: true, status: "completed" }
+          : t
+      )
+    );
+  } catch (e) {
+    console.error("Completion error:", e);
+  }
+};
+
+  const deleteTask = async (taskId) => {
+    try {
+      await deleteTaskApi(taskId);
+      setTasks((prev) => prev.filter((task) => task.id !== taskId));
+    } catch (e) {
+      console.error("Delete error:", e);
+    }
+  };
+
+  const editTask = async (taskId) => {
+    const task = tasks.find((t) => t.id === taskId);
+    const newTitle = prompt("Edit Task Title:", task.title);
+    if (newTitle) {
+      const updatedTask = { ...task, title: newTitle };
+      try {
+        await updateTask(taskId, updatedTask);
+        setTasks((prevTasks) =>
+          prevTasks.map((t) => (t.id === taskId ? updatedTask : t))
+        );
+      } catch (e) {
+        console.error("Edit error:", e);
+      } 
+    }
+  };
+
+  useEffect(() => {
+    const loadPersons = async () => {
+      try {
+        const res = await getPersons();
+        setUsersCount(res.data.length);
+        console.log("Persons:", res.data);
+      } catch (error) {
+        console.error("Error loading persons:", error);
+      }
+    };
+
+    loadPersons();
+  }, []);
+
 
   const today = new Date();
   const sortedTasks = [...tasks].sort(
@@ -35,9 +109,17 @@ const Dashboard = () => {
     (task) => new Date(task.dueDate) >= today
   );
 
+  const visibleRecentTasks = showAll
+  ? recentTasks
+  : recentTasks.slice(0, 3);
+
   const overdueTasks = sortedTasks.filter(
     (task) => new Date(task.dueDate) < today && task.status !== "completed"
   );
+
+  const visibleOverdueTasks = showAll
+    ? overdueTasks
+    : overdueTasks.slice(0, 3);
 
   const TaskTable = ({ tasks, title, isOverdue }) => (
     <div className="tasks-section">
@@ -48,7 +130,8 @@ const Dashboard = () => {
             <span className="badge bg-danger ms-2">{tasks.length}</span>
           )}
         </h2>
-        <button className="btn btn-link text-decoration-none">
+        <button className="btn btn-link text-decoration-none"
+        onClick={() => setShowAll((prev) => !prev)}>
           View All
           <i className="bi bi-arrow-right ms-2"></i>
         </button>
@@ -98,16 +181,29 @@ const Dashboard = () => {
                     </button>
                     <ul className="dropdown-menu dropdown-menu-end">
                       <li>
-                        <button className="dropdown-item">Edit</button>
+                        <button
+                          onClick={() => editTask(task.id)}
+                          className="dropdown-item"
+                        >
+                          Edit
+                        </button>
                       </li>
                       <li>
-                        <button className="dropdown-item">Mark Complete</button>
+                        <button
+                          className="dropdown-item"
+                          onClick={() => markComplete(task.id)}
+                        >
+                          Mark Complete
+                        </button>
                       </li>
                       <li>
                         <hr className="dropdown-divider" />
                       </li>
                       <li>
-                        <button className="dropdown-item text-danger">
+                        <button
+                          onClick={() => deleteTask(task.id)}
+                          className="dropdown-item text-danger"
+                        >
                           Delete
                         </button>
                       </li>
@@ -153,7 +249,7 @@ const Dashboard = () => {
               </div>
               <div className="stat-info">
                 <h3>Pending</h3>
-                <p className="stat-number">{pandingCount}</p>
+                <p className="stat-number">{pendingCount}</p>
               </div>
             </div>
 
@@ -193,19 +289,19 @@ const Dashboard = () => {
               </div>
               <div className="stat-info">
                 <h3>Users</h3>
-                <p className="stat-number">1</p>
+                <p className="stat-number">{usersCount}</p>
               </div>
             </div>
           </div>
 
           <div className="tasks-grid">
             <TaskTable
-              tasks={recentTasks}
+              tasks={visibleRecentTasks}
               title="Recent Tasks"
               isOverdue={false}
             />
             <TaskTable
-              tasks={overdueTasks}
+              tasks={visibleOverdueTasks}
               title="Overdue Tasks"
               isOverdue={true}
             />

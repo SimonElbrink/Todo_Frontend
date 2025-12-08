@@ -25,3 +25,4 @@ export const updateTask = (id, data) => api.put(`/todo/${id}`, data);
 export const deleteTask = (id) => api.delete(`/todo/${id}`); 
 export const toggleTaskCompletion = (id) => api.patch(`/todo/${id}/toggle`); 
 
+
