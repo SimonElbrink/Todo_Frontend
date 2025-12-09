@@ -301,7 +301,15 @@ const Task = () => {
                                                             <span className="badge bg-info me-2">
                                                             <i className="bi bi-person"></i>{task.personName || "Unassigned"}
                                                         </span>
-                                                        <span className="badge bg-warning text-dark me-2">pending</span>
+                                                        )}
+
+                                                        <span className={`badge me-2 ${statusClasses[task.status] || "bg-secondary"}`}
+                                                        style={{cursor:"pointer"}}
+                                                        onClick={()=> {
+                                                            setTasks(prevTasks=>prevTasks.map((prevTask,i)=>i===index? {...prevTask, status: statusTask(prevTask.status)}:prevTask));
+                                                            }
+
+                                                        }>{task.status}</span>
                                                     </div>
                                                 </div>
                                                 <div className="btn-group ms-3">
