@@ -256,20 +256,50 @@ const Task = () => {
                                 <div className="card-body">
                                     <div className="list-group">
                                         {/* Task 1 */}
+                                        {sortedTasks.map((task, index) => (
                                         <div className="list-group-item list-group-item-action">
                                             <div className="d-flex w-100 justify-content-between align-items-start">
                                                 <div className="flex-grow-1">
                                                     <div className="d-flex justify-content-between">
-                                                        <h6 className="mb-1">Complete Project Documentation</h6>
-                                                        <small className="text-muted ms-2">Created: 2025-08-07</small>
+                                                        {task.isEditing ? (
+                                                            <input type="text" className="form-control form-control-sm"
+                                                                   value={editTitle || task.title}
+                                                            onChange={(e) => setEditTitle(e.target.value)}/>
+                                                        ) : (
+                                                        <h6 className="mb-1">{task.title}</h6>
+                                                        )}
+                                                        <small className="text-muted ms-2">Created: {task.createdAt}</small>
                                                     </div>
-                                                    <p className="mb-1 text-muted small">Write comprehensive documentation for the new features</p>
+                                                    {task.isEditing ? (
+                                                        <input type="text" className="form-control form-control-sm"
+                                                        value={editDescription || task.description}
+                                                        onChange={(e) => setEditDescription(e.target.value)}/>
+                                                    ) : (
+                                                        <p className="mb-1 text-muted small">{task.description}</p>
+                                                    )}
+
                                                     <div className="d-flex align-items-center flex-wrap">
-                                                        <small className="text-muted me-2">
-                                                            <i className="bi bi-calendar-event"></i> Due: 2025-08-15
-                                                        </small>
-                                                        <span className="badge bg-info me-2">
-                                                            <i className="bi bi-person"></i> Mehrdad Javan
+                                                        {task.isEditing ? (
+                                                            <input type="datetime-local" className="form-control form-control-sm"
+                                                            value={editDueDate || task.dueDate}
+                                                            onChange={(e) => setEditDueDate(e.target.value)}/>
+                                                        ) : (
+                                                            <small className="text-muted me-2">
+                                                                <i className="bi bi-calendar-event"></i> Due: {task.dueDate.split('T')[0]}
+                                                            </small>
+                                                        )}
+                                                        {task.isEditing ? (
+                                                            <select className="form-control form-control-sm"
+                                                            value={editPersonId || task.personId}
+                                                            onChange={(e) => {setEditPersonId(e.target.value);
+                                                            setEditPersonName(e.target.options[e.target.selectedIndex].text);}}>
+                                                                <option value="">-- Select Person (Optional) --</option>
+                                                                <option value="1">Mehrdad Javan</option>
+                                                                <option value="2">Simon Elbrink</option>
+                                                                </select>
+                                                       ) : (
+                                                            <span className="badge bg-info me-2">
+                                                            <i className="bi bi-person"></i>{task.personName || "Unassigned"}
                                                         </span>
                                                         <span className="badge bg-warning text-dark me-2">pending</span>
                                                     </div>
@@ -293,9 +323,29 @@ const Task = () => {
                                                             onClick={() => deleteTask(index)}>
                                                         <i className="bi bi-trash"></i>
                                                     </button>
+                                                    {task.isEditing && (
+                                                        <>
+                                                        <button className="btn btn-outline-secondary btn-sm"
+                                                                title="Save"
+                                                                type="button"
+                                                                onClick={() => { toggleTaskUpdating(index, {title: editTitle || task.title,
+                                                                    description: editDescription || title.description,
+                                                                    dueDate: editDueDate || task.dueDate,
+                                                                    personId: editPersonId || task.personId,
+                                                                    personName: editPersonName || task.personName,});
+                                                            toggleTaskEditing(index)}}>
+                                                            <i className="bi bi-check2-circle">Save</i>
+                                                        </button>
+                                                        <button type="button"
+                                                        className="btn btn-secondary btn-sm p-1 ms-1"
+                                                        onClick={()=>toggleTaskEditing(index)}> Cancel </button>
+                                                        </>
+                                                    )}
                                                 </div>
+
                                             </div>
                                         </div>
+                                        ))}
 
                                         {/* Task 2 */}
                                         <div className="list-group-item list-group-item-action">
