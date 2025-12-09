@@ -72,20 +72,6 @@ export async function createTask(task) {
     return mapFromBackend(data);
 }
 
-// get all tasks
-export async function getAllTasks() {
-    const res = await fetch(API_BASE, {
-        method: "GET",
-        headers: {
-        ...getAuthToken()},
-    });
-    if (!res.ok) {
-        throw new Error("Failed to fetch tasks");
-    }
-    const data = await res.json();
-    return data.map(mapFromBackend);
-}
-
 // delete task
 export async function deleteTask(id) {
     const res = await fetch(`${API_BASE}/${id}`, {
@@ -121,4 +107,44 @@ export async function updateTask(id, task) {
     }
     const data = await res.json();
     return mapFromBackend(data);
+}
+
+// get all tasks
+export async function getAllTasks() {
+    const res = await fetch(API_BASE, {
+        method: "GET",
+        headers: {
+            ...getAuthToken()},
+    });
+    if (!res.ok) {
+        throw new Error("Failed to fetch tasks");
+    }
+    const data = await res.json();
+    return data.map(mapFromBackend);
+}
+
+// get task by personId
+export async function getTaskByPersonId(personId) {
+    const res = await fetch(`${API_BASE}/person/${personId}`, {
+        method: "GET",
+        headers: {
+        ...getAuthToken()},
+    });
+    if (!res.ok) {
+        throw new Error("Failed to fetch task");
+    }
+    const data = await res.json();
+    return data.map(mapFromBackend);
+}
+
+// get overdue tasks
+export async function getOverdueTasks() {
+    const res = await fetch(`${API_BASE}/overdue`, {
+        method: "GET",
+        headers: {
+        ...getAuthToken()},
+    });
+    if (!res.ok) {
+        throw new Error("Failed to fetch overdue tasks");
+    }
 }
