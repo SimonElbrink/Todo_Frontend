@@ -38,6 +38,118 @@ const Task = () => {
 
 
     // todo*: make this component functional by implementing state management and API calls
+    async function addTask(newTask) {
+        try {
+            const savedTask = await createTask(newTask);
+            setTasks((prevTasks) => [...prevTasks, savedTask]);
+        } catch (error) {
+            console.log("Failed to save task", error);
+        }
+    }
+
+    function deleteTask(index) {
+        setTasks((prevTasks) => prevTasks.filter((_, i) => i !== index));
+    }
+
+    function toggleTaskCompletion(index) {
+        setTasks(
+            (prevTasks) => prevTasks.map((task, i) => (i === index ? {...task, status: "completed"} : task))
+        )
+    }
+
+    function toggleTaskEditing(index) {
+        setTasks((prevTasks)=>prevTasks.map((task,i)=>i===index? {...task, isEditing: !task.isEditing}:task));
+    }
+
+    function toggleTaskUpdating(index, updatedFields) {
+        setTasks((prevTasks)=>prevTasks.map((task,i)=>i===index? {...task, ...updatedFields}:task));
+    }
+
+    const filteredTasks = tasks.filter((task) => {
+        if (filterStatus === "pending") return task.status === "pending";
+        if (filterStatus === "in-progress") return task.status === "in-progress";
+        if (filterStatus === "completed") return task.status === "completed";
+        return true;
+    })
+
+    const sortedTasks = [...filteredTasks].sort((a, b) => {
+        if (sortOrder === "asc") return a.createdAt - b.createdAt;
+        if (sortOrder === "desc") return b.createdAt - a.createdAt;
+        return 0;
+    })
+
+    const statusTask = (status) => {
+        if (status === "pending") return "in-progress";
+        return status;
+    }
+
+    const statusClasses = {
+        pending: "bg-warning text-dark",
+        "in-progress": "bg-primary",
+        completed: "bg-success",
+    };
+
+    function handleAttachment(e) {
+        const files = e.target.files;
+        const newFiles = files ? Array.from(files) : [];
+        (files.length > 0 ? setChosenFiles(files[0].name):"No file chosen");
+        setAttachments((prev) => [...prev, ...newFiles]);
+    }
+
+    function handleClearAttachment() {
+        setAttachments([]);
+        setChosenFiles("No files chosen");
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    }
+
+    function handleAssigneeChange(selectedPerson) {
+        setTasks((prevTasks) => ({
+            ...prevTasks,
+            personId: selectedPerson.value,
+            personName: selectedPerson.label,
+            status: "in-progress",
+        }));
+    }
+
+    async function handleSubmit(e) {
+        const today = new Date().toISOString().split('T')[0];
+        e.preventDefault();
+        const newTask = {title, description, dueDate: dueDate || today, personId, personName: personName || null, attachments, status: personId ? "in-progress":"pending", isEditing: false, createdAt: new Date().toISOString()};
+        const validationErrors = {}
+        if (title.trim() === "") {
+            validationErrors.title = "Title is required"
+        }
+        if (description.trim() === "") {
+            validationErrors.description = "Description is required"
+        }
+
+        if (dueDate.trim() === "") {
+            validationErrors.dueDate = "Due date is required"
+        }
+        if (dueDate !== "" && dueDate < today) {
+            validationErrors.dueDate = "Future date required"
+        }
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        } if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
+            setErrors({})
+
+        await addTask(newTask);
+
+            setTitle("");
+            setDescription("");
+            setDueDate("");
+            setPersonId("");
+            setAttachments([]);
+            setChosenFiles("No file chosen")
+        }
 
     return (
         <div className="dashboard-layout">
