@@ -3,7 +3,7 @@ import React, {useRef, useState, useEffect} from 'react';
 import './Task.css';
 import Sidebar from './Sidebar';
 import Header from "./Header.jsx";
-import {createTask, getAllTasks} from '../services/taskService';
+import {createTask, getAllTasks, deleteTask as deleteTaskApi, updateTask as updateTaskApi} from '../services/taskService';
 
 const Task = () => {
     const [tasks, setTasks] = useState([]);
@@ -48,9 +48,16 @@ const Task = () => {
         }
     }
 
-    function deleteTask(index) {
-        setTasks((prevTasks) => prevTasks.filter((_, i) => i !== index));
-    }
+    async function handleDeleteTask(id) {
+        try {
+            await deleteTaskApi(id);
+            setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+        } catch (error) {
+            console.log("Failed to delete task", error);
+        }
+
+        }
+
 
     function toggleTaskCompletion(index) {
         setTasks(
@@ -258,7 +265,8 @@ const Task = () => {
                                     <div className="list-group">
                                         {/* Task 1 */}
                                         {sortedTasks.map((task, index) => (
-                                        <div className="list-group-item list-group-item-action">
+                                        <div className="list-group-item list-group-item-action"
+                                        key={task.id ?? index}>
                                             <div className="d-flex w-100 justify-content-between align-items-start">
                                                 <div className="flex-grow-1">
                                                     <div className="d-flex justify-content-between">
@@ -329,7 +337,7 @@ const Task = () => {
                                                     <button className="btn btn-outline-danger btn-sm"
                                                             title="Delete"
                                                             type="button"
-                                                            onClick={() => deleteTask(index)}>
+                                                            onClick={() => handleDeleteTask(task.id)}>
                                                         <i className="bi bi-trash"></i>
                                                     </button>
                                                     {task.isEditing && (
