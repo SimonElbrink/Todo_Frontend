@@ -275,13 +275,22 @@ const Task = () => {
                                                     </div>
                                                 </div>
                                                 <div className="btn-group ms-3">
-                                                    <button className="btn btn-outline-success btn-sm" title="Complete">
+                                                    <button className="btn btn-outline-success btn-sm"
+                                                            title="Complete"
+                                                            type="button"
+                                                            onClick={() => toggleTaskCompletion(index)}>
                                                         <i className="bi bi-check-lg"></i>
                                                     </button>
-                                                    <button className="btn btn-outline-primary btn-sm" title="Edit">
+                                                    <button className="btn btn-outline-primary btn-sm"
+                                                            title="Edit"
+                                                            type="button"
+                                                            onClick={() => toggleTaskEditing(index)}>
                                                         <i className="bi bi-pencil"></i>
                                                     </button>
-                                                    <button className="btn btn-outline-danger btn-sm" title="Delete">
+                                                    <button className="btn btn-outline-danger btn-sm"
+                                                            title="Delete"
+                                                            type="button"
+                                                            onClick={() => deleteTask(index)}>
                                                         <i className="bi bi-trash"></i>
                                                     </button>
                                                 </div>
