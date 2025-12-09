@@ -5,6 +5,37 @@ import Sidebar from './Sidebar';
 import Header from "./Header.jsx";
 
 const Task = () => {
+    const [tasks, setTasks] = useState([]);
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [dueDate, setDueDate] = useState("");
+    const [personName, setPersonName] = useState("");
+    const [personId, setPersonId] = useState("");
+    const [attachments, setAttachments] = useState([]);
+    const [errors, setErrors] = useState({});
+    const [, setChosenFiles] = useState("No files chosen");
+    const fileInputRef = useRef(null);
+    const [filterStatus, setFilterStatus] = useState("all");//all /pending /in-process /completed
+    const [sortOrder, setSortOrder] = useState("none");//none, asc, desc
+    const [editTitle, setEditTitle] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [editDueDate, setEditDueDate] = useState("");
+    const [editPersonId, setEditPersonId] = useState("");
+    const [editPersonName, setEditPersonName] = useState("");
+
+    useEffect(() => {
+        async function fetchTasks() {
+            try {
+                const data = await getAllTasks();
+                setTasks(data);
+            }catch(error) {
+                console.log("Failed to load tasks", error);
+            }
+        }
+        fetchTasks();
+    }, []);
+
+
 
     // todo*: make this component functional by implementing state management and API calls
 
