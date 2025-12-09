@@ -85,3 +85,39 @@ export async function getAllTasks() {
     const data = await res.json();
     return data.map(mapFromBackend);
 }
+
+// delete task
+export async function deleteTask(id) {
+    const res = await fetch(`${API_BASE}/${id}`, {
+        method: "DELETE",
+        headers: {
+        ...getAuthToken()},
+    });
+    if (!res.ok) {
+        throw new Error("Failed to delete task");
+    }
+}
+
+// update task
+export async function updateTask(id, task) {
+    const body = mapToBackend(task);
+    const formData = new FormData();
+
+    formData.append(
+        "todo",
+        new Blob ([JSON.stringify(body)], {type: "application/json"})
+    )
+
+    const res = await fetch(`${API_BASE}/${id}`, {
+        method: "PUT",
+        headers: {
+        ...getAuthToken()},
+    });
+    if (!res.ok) {
+        const text = await res.text().catch(()=>"");
+        console.error("Update failed:", res.status, text);
+        throw new Error("Failed to update task");
+    }
+    const data = await res.json();
+    return mapFromBackend(data);
+}
