@@ -203,7 +203,19 @@ const Task = () => {
                                                     <i className="bi bi-x-lg"></i>
                                                 </button>
                                             </div>
-                                            <div className="file-list" id="attachmentPreview"></div>
+                                            <div className="file-list" id="attachmentPreview">
+                                                {attachments.length===0 ? (
+                                                    <span className="text-muted small">No files selected</span>
+                                                ) : (
+                                                    <ul className="list-unstyled mb-0">
+                                                        {attachments.map((attachment, index) => (
+                                                            <li key={index}>
+                                                                <span className="text-muted small">{attachment.name}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="d-grid gap-2 d-md-flex justify-content-md-end">
                                             <button type="submit" className="btn btn-primary">
