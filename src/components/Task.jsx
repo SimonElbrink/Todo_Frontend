@@ -68,11 +68,11 @@ const Task = () => {
             console.log("Failed to complete task", error);
         }
     }
-    function toggleTaskCompletion(index) {
+    /*function toggleTaskCompletion(index) {
         setTasks(
-            (prevTasks) => prevTasks.map((task, i) => (i === index ? {...task, status: "completed"} : task))
+        (prevTasks) => prevTasks.map((task, i) => (i === index ? {...task, status: "completed"} : task))
         )
-    }
+    }*/
 
     function toggleTaskEditing(index) {
         setTasks((prevTasks)=>prevTasks.map((task,i)=>i===index? {...task, isEditing: !task.isEditing}:task));
@@ -126,15 +126,6 @@ const Task = () => {
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
-    }
-
-    function handleAssigneeChange(selectedPerson) {
-        setTasks((prevTasks) => ({
-            ...prevTasks,
-            personId: selectedPerson.value,
-            personName: selectedPerson.label,
-            status: "in-progress",
-        }));
     }
 
     async function handleSubmit(e) {
