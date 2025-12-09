@@ -218,7 +218,7 @@ const Task = () => {
                                             </div>
                                         </div>
                                         <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                                            <button type="submit" className="btn btn-primary">
+                                            <button type="submit" className="btn btn-primary" onClick={handleSubmit}>
                                                 <i className="bi bi-plus-lg me-2"></i>
                                                 Add Task
                                             </button>
