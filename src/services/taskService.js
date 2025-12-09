@@ -112,6 +112,7 @@ export async function updateTask(id, task) {
         method: "PUT",
         headers: {
         ...getAuthToken()},
+        body: formData,
     });
     if (!res.ok) {
         const text = await res.text().catch(()=>"");
