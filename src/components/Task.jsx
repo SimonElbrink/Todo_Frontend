@@ -69,8 +69,14 @@ const Task = () => {
         setTasks((prevTasks)=>prevTasks.map((task,i)=>i===index? {...task, isEditing: !task.isEditing}:task));
     }
 
-    function toggleTaskUpdating(index, updatedFields) {
-        setTasks((prevTasks)=>prevTasks.map((task,i)=>i===index? {...task, ...updatedFields}:task));
+    async function handleUpdateTask(id, updatedFields) {
+        try {
+            const updatedTask = await updateTaskApi(id, updatedFields);
+
+            setTasks((prevTasks)=>prevTasks.map((task)=>task.id===id? updatedTask:task));
+        } catch (error) {
+            console.log("Failed to update task", error);
+        }
     }
 
     const filteredTasks = tasks.filter((task) => {
@@ -345,12 +351,16 @@ const Task = () => {
                                                         <button className="btn btn-outline-secondary btn-sm"
                                                                 title="Save"
                                                                 type="button"
-                                                                onClick={() => { toggleTaskUpdating(index, {title: editTitle || task.title,
-                                                                    description: editDescription || title.description,
+                                                                onClick={() => { const updatedFields = {
+                                                                    title: editTitle || task.title,
+                                                                    description: editDescription || task.description,
                                                                     dueDate: editDueDate || task.dueDate,
                                                                     personId: editPersonId || task.personId,
-                                                                    personName: editPersonName || task.personName,});
-                                                            toggleTaskEditing(index)}}>
+                                                                    personName: editPersonName || task.personName,
+                                                                    status: task.status,
+                                                                    attachments:task.attachments,};
+                                                                    handleUpdateTask(task.id, updatedFields);
+                                                                    toggleTaskEditing(index)}}>
                                                             <i className="bi bi-check2-circle">Save</i>
                                                         </button>
                                                         <button type="button"
