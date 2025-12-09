@@ -241,8 +241,15 @@ const Task = () => {
                                              {filterStatus === 'pending' ? 'pending' : filterStatus === 'in-progress' ? 'in-progress' :filterStatus === 'completed' ? 'completed' : 'all'}
                                             </span>
                                         </button>
-                                        <button className="btn btn-outline-secondary btn-sm" title="Sort">
+
+                                        <button className="btn btn-outline-secondary btn-sm"
+                                                title="Sort"
+                                                type="button"
+                                                onClick={() => setSortOrder(sortOrder === "none" ? "asc" : sortOrder === "asc" ? "desc" : "none")}>
                                             <i className="bi bi-sort-down"></i>
+                                            <span className="ms-2 badge text-bg-light">
+                                                {sortOrder === 'none' ? 'No sort' : sortOrder === 'asc' ? '↑' : '↓'}
+                                                </span>
                                         </button>
                                     </div>
                                 </div>
