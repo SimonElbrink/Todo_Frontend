@@ -198,8 +198,8 @@ const Task = () => {
                                         <div className="mb-3">
                                             <label className="form-label">Attachments</label>
                                             <div className="input-group mb-3">
-                                                <input type="file" className="form-control" id="todoAttachments" multiple />
-                                                <button className="btn btn-outline-secondary" type="button">
+                                                <input type="file" className="form-control" id="todoAttachments" multiple onChange={handleAttachment} ref={fileInputRef}/>
+                                                <button className="btn btn-outline-secondary" type="button" onClick={handleClearAttachment}>
                                                     <i className="bi bi-x-lg"></i>
                                                 </button>
                                             </div>
