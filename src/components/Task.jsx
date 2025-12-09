@@ -170,20 +170,25 @@ const Task = () => {
                                     <form id="todoForm">
                                         <div className="mb-3">
                                             <label htmlFor="todoTitle" className="form-label">Title</label>
-                                            <input type="text" className="form-control" id="todoTitle" required />
+                                            {errors.title && <div className="text-danger small">{errors.title}</div>}
+                                            <input type="text" className="form-control" id="todoTitle" required value={title} onChange={(e) => setTitle(e.target.value)}/>
                                         </div>
                                         <div className="mb-3">
                                             <label htmlFor="todoDescription" className="form-label">Description</label>
-                                            <textarea className="form-control" id="todoDescription" rows="3"></textarea>
+                                            {errors.description && <div className="text-danger small">{errors.description}</div>}
+                                            <textarea className="form-control" id="todoDescription" rows="3" value={description} onChange={(e) => setDescription(e.target.value)}></textarea>
                                         </div>
                                         <div className="row">
                                             <div className="col-md-6 mb-3">
                                                 <label htmlFor="todoDueDate" className="form-label">Due Date</label>
-                                                <input type="datetime-local" className="form-control" id="todoDueDate" />
+                                                {errors.dueDate && <div className="text-danger small">{errors.dueDate}</div>}
+                                                <input type="datetime-local" className="form-control" id="todoDueDate" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
                                             </div>
                                             <div className="col-md-6 mb-3">
                                                 <label htmlFor="todoPerson" className="form-label">Assign to Person</label>
-                                                <select className="form-select" id="todoPerson">
+
+                                                <select className="form-select" id="todoPerson" value={personId} onChange={(e) => {setPersonId(e.target.value);
+                                                setPersonName(e.target.options[e.target.selectedIndex].text);}}>
                                                     <option value="">-- Select Person (Optional) --</option>
                                                     <option value="1">Mehrdad Javan</option>
                                                     <option value="2">Simon Elbrink</option>
