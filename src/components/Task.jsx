@@ -59,6 +59,15 @@ const Task = () => {
         }
 
 
+    async function hadleTaskCompletion(task){
+        const updatedTask = {...task, status: "completed"};
+        try{
+            const savedTask = await updateTaskApi(task.id, updatedTask);
+            setTasks((prevTasks)=>prevTasks.map((prevTask)=>prevTask.id===task.id? savedTask:prevTask));
+        } catch(error){
+            console.log("Failed to complete task", error);
+        }
+    }
     function toggleTaskCompletion(index) {
         setTasks(
             (prevTasks) => prevTasks.map((task, i) => (i === index ? {...task, status: "completed"} : task))
@@ -331,7 +340,7 @@ const Task = () => {
                                                     <button className="btn btn-outline-success btn-sm"
                                                             title="Complete"
                                                             type="button"
-                                                            onClick={() => toggleTaskCompletion(index)}>
+                                                            onClick={() => hadleTaskCompletion(task)}>
                                                         <i className="bi bi-check-lg"></i>
                                                     </button>
                                                     <button className="btn btn-outline-primary btn-sm"
