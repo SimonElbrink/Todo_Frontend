@@ -231,8 +231,15 @@ const Task = () => {
                                 <div className="card-header bg-white d-flex justify-content-between align-items-center">
                                     <h5 className="card-title mb-0">Tasks</h5>
                                     <div className="btn-group">
-                                        <button className="btn btn-outline-secondary btn-sm" title="Filter">
+                                        <button className="btn btn-outline-secondary btn-sm"
+                                                title="Filter"
+                                                type="button"
+                                                onClick={() => setFilterStatus(filterStatus==="all" ? "pending" :filterStatus === "pending" ? "in-progress" :
+                                                    filterStatus === "in-progress" ? "completed" : "all")}>
                                             <i className="bi bi-funnel"></i>
+                                            <span className=" ms-2 badge text-bg-light">
+                                             {filterStatus === 'pending' ? 'pending' : filterStatus === 'in-progress' ? 'in-progress' :filterStatus === 'completed' ? 'completed' : 'all'}
+                                            </span>
                                         </button>
                                         <button className="btn btn-outline-secondary btn-sm" title="Sort">
                                             <i className="bi bi-sort-down"></i>
