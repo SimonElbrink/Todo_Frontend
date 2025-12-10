@@ -3,7 +3,14 @@ import React, {useRef, useState, useEffect} from 'react';
 import './Task.css';
 import Sidebar from './Sidebar';
 import Header from "./Header.jsx";
-import {createTask, getAllTasks, deleteTask as deleteTaskApi, updateTask as updateTaskApi} from '../services/taskService';
+import {
+    createTask,
+    getAllTasks,
+    deleteTask as deleteTaskApi,
+    updateTask as updateTaskApi,
+    getTaskByPersonId,
+    getOverdueTasks,
+} from '../services/taskService';
 
 const Task = () => {
     const [tasks, setTasks] = useState([]);
@@ -23,6 +30,8 @@ const Task = () => {
     const [editDueDate, setEditDueDate] = useState("");
     const [editPersonId, setEditPersonId] = useState("");
     const [editPersonName, setEditPersonName] = useState("");
+    const [dataSource, setDataSource] = useState("");
+    const [filterPersonId, setFilterPersonId] = useState("");
 
     useEffect(() => {
         async function fetchTasks() {
@@ -94,6 +103,18 @@ const Task = () => {
         if (filterStatus === "completed") return task.status === "completed";
         return true;
     })
+
+    async function handleTaskFilter(a){
+        if(a==="overdue"){
+            const overDue = await getOverdueTasks();
+            setTasks(overDue);
+        } else if (a==="byPerson"){
+            const taskByPerson = await getTaskByPersonId(filterPersonId);
+            setTasks(taskByPerson);
+        } else {
+            setTasks(await getAllTasks());
+        }
+    }
 
     const sortedTasks = [...filteredTasks].sort((a, b) => {
         if (sortOrder === "asc") return a.createdAt - b.createdAt;
