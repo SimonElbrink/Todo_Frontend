@@ -147,6 +147,8 @@ export async function getOverdueTasks() {
     if (!res.ok) {
         throw new Error("Failed to fetch overdue tasks");
     }
+    const data = await res.json();
+    return data.map(mapFromBackend);
 }
 
 // get tasks by status
