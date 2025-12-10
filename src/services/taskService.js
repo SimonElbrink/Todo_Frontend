@@ -148,3 +148,17 @@ export async function getOverdueTasks() {
         throw new Error("Failed to fetch overdue tasks");
     }
 }
+
+// get tasks by status
+export async function getTaskByStatus(status) {
+    const res = await fetch(`${API_BASE}/${status}`, {
+        method: "GET",
+        headers: {
+        ...getAuthToken()},
+    });
+    if (!res.ok) {
+        throw new Error("Failed to fetch task");
+    }
+    const data = await res.json();
+    return data.map(mapFromBackend);
+}
