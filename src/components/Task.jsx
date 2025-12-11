@@ -191,6 +191,10 @@ const Task = () => {
             setPersonId("");
             setAttachments([]);
             setChosenFiles("No file chosen")
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
         }
 
     return (
