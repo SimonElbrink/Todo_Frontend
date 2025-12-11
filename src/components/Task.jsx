@@ -30,7 +30,6 @@ const Task = () => {
     const [editDueDate, setEditDueDate] = useState("");
     const [editPersonId, setEditPersonId] = useState("");
     const [editPersonName, setEditPersonName] = useState("");
-    const [dataSource, setDataSource] = useState("");
     const [filterPersonId, setFilterPersonId] = useState("");
 
     useEffect(() => {
