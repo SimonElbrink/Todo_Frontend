@@ -67,7 +67,7 @@ const Task = () => {
         }
 
 
-    async function hadleTaskCompletion(task){
+    async function handleTaskCompletion(task){
         const updatedTask = {...task, status: "completed"};
         try{
             const savedTask = await updateTaskApi(task.id, updatedTask);
@@ -351,7 +351,7 @@ const Task = () => {
                                                     <button className="btn btn-outline-success btn-sm"
                                                             title="Complete"
                                                             type="button"
-                                                            onClick={() => hadleTaskCompletion(task)}>
+                                                            onClick={() => handleTaskCompletion(task)}>
                                                         <i className="bi bi-check-lg"></i>
                                                     </button>
                                                     <button className="btn btn-outline-primary btn-sm"
