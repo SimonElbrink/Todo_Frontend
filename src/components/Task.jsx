@@ -31,6 +31,9 @@ const Task = () => {
     const [editPersonId, setEditPersonId] = useState("");
     const [editPersonName, setEditPersonName] = useState("");
     const [filterPersonId, setFilterPersonId] = useState("");
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+
 
     useEffect(() => {
         async function fetchTasks() {
@@ -104,15 +107,20 @@ const Task = () => {
     })
 
     async function handleTaskFilter(a){
-        if(a==="overdue"){
-            const overDue = await getOverdueTasks();
-            setTasks(overDue);
-        } else if (a==="byPerson"){
-            const taskByPerson = await getTaskByPersonId(filterPersonId);
-            setTasks(taskByPerson);
-        } else {
-            setTasks(await getAllTasks());
+        try {
+            if(a==="overdue"){
+                const overDue = await getOverdueTasks();
+                setTasks(overDue);
+            } else if (a==="byPerson"){
+                const taskByPerson = await getTaskByPersonId(filterPersonId);
+                setTasks(taskByPerson);
+            } else {
+                setTasks(await getAllTasks());
+            }
+        } catch (error) {
+            console.log("Failed to filter tasks", error);
         }
+
     }
 
     const sortedTasks = [...filteredTasks].sort((a, b) => {
