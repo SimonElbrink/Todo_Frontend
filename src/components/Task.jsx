@@ -272,17 +272,87 @@ const Task = () => {
                             <div className="card shadow-sm tasks-list mt-4">
                                 <div className="card-header bg-white d-flex justify-content-between align-items-center">
                                     <h5 className="card-title mb-0">Tasks</h5>
-                                    <div className="btn-group">
+                                    <div className="btn-group position-relative">
                                         <button className="btn btn-outline-secondary btn-sm"
-                                                title="Filter"
                                                 type="button"
-                                                onClick={() => setFilterStatus(filterStatus==="all" ? "pending" :filterStatus === "pending" ? "in-progress" :
-                                                    filterStatus === "in-progress" ? "completed" : "all")}>
+                                                title="Filter"
+                                                onClick={()=>setIsFilterOpen((prevState)=>!prevState)}>
                                             <i className="bi bi-funnel"></i>
-                                            <span className=" ms-2 badge text-bg-light">
-                                             {filterStatus === 'pending' ? 'pending' : filterStatus === 'in-progress' ? 'in-progress' :filterStatus === 'completed' ? 'completed' : 'all'}
-                                            </span>
-                                        </button>
+                                            </button>
+                                        {isFilterOpen && (
+                                            <div className="card shadow-sm filter-section position-absolute filter-fs "
+                                            style={{minWidth: "220px", zIndex: 1050, top:"100%", right:0}}>
+                                                <div className="list-group list-group-flush small">
+                                                    <div className="list-group-item text-muted fw-bold py-1">
+                                                        Source
+                                                    </div>
+                                                    <button type="button"
+                                                    className="list-group-item list-group-item-action py-1"
+                                                    onClick={async()=> {await handleTaskFilter("all");
+                                                    setIsFilterOpen(false)}}>All tasks
+                                                    </button>
+
+                                                    <button type="button"
+                                                    className="list-group-item list-group-item-action py-1"
+                                                    onClick={async()=> {await handleTaskFilter("overdue");
+                                                    setIsFilterOpen(false)}}>Overdue tasks
+                                                    </button>
+
+                                                    <div className="text-muted mb-1 py-1 ps-3">Task by person</div>
+                                                    <div className="d-flex gap-2">
+                                                    <input type="number"
+                                                           className="form-control form-control-sm ps-3 ms-3 py-1 filter-input"
+                                                           id="fild-for-id"
+                                                           value={filterPersonId}
+                                                           onChange={(e)=> setFilterPersonId(e.target.value)}/>
+                                                    <button type="button"
+                                                    className="btn btn-sm btn-outline-secondary me-2 px-1 py-1 filter-input"
+                                                    onClick={async()=>{await handleTaskFilter("byPerson");
+                                                        setIsFilterOpen(false);
+                                                        setFilterPersonId("");
+                                                    }}>Apply
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="list-group-item text-muted fw-bold py-1">
+                                                        Status
+                                                    </div>
+                                                    <button type="button"
+                                                    className="list-group-item list-group-item-action py-1"
+                                                    onClick={()=>{
+                                                        setFilterStatus("all");
+                                                        setIsFilterOpen(false);
+                                                    }}>All statuses
+                                                    </button>
+                                                    <button
+                                                    type="button"
+                                                    className="list-group-item list-group-item-action py-1"
+                                                    onClick={()=>{
+                                                        setFilterStatus("pending");
+                                                        setIsFilterOpen(false);
+                                                    }}>Pending
+                                                    </button>
+                                                    <button
+                                                    type="button"
+                                                    className="list-group-item list-group-item-action py-1"
+                                                    onClick={()=>{
+                                                        setFilterStatus("in-progress");
+                                                        setIsFilterOpen(false);
+                                                    }}>In-progress
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="list-group-item list-group-item-action py-1"
+                                                        onClick={()=>{
+                                                            setFilterStatus("completed");
+                                                            setIsFilterOpen(false);
+                                                        }}>Completed
+                                                    </button>
+
+                                                </div>
+
+                                            </div>
+                                        )}
 
                                         <button className="btn btn-outline-secondary btn-sm"
                                                 title="Sort"
