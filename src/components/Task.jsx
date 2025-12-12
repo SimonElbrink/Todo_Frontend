@@ -9,6 +9,8 @@ import {
   deleteTask,
 } from "../services/taskService.js";
 const Task = () => {
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [sortType, setSortType] = useState("createdAt-desc");
   const [tasks, setTasks] = React.useState([
     {
       id: 1,
@@ -102,15 +104,63 @@ const Task = () => {
     }
   };
 
-  const handleEditTask = async (taskId, updatedData) => {
+  const handleEditTask = async (taskId) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    const newTitle = prompt("Edit Task Title:", task.title);
+    if (!newTitle) return;
+
+    const newDescription = prompt(
+      "Edit Task Description:",
+      task.description || ""
+    );
+
+    const newDueDate = prompt(
+      "Edit Due Date (YYYY-MM-DD):",
+      task.dueDate ? task.dueDate.split("T")[0] : ""
+    );
+
+    const newPersonId = prompt(
+      "Edit Assigned Person ID (leave blank for none):",
+      task.personId || ""
+    );
+
+    const updatedTask = {
+      ...task,
+      title: newTitle,
+      description: newDescription,
+      dueDate: newDueDate,
+      personId: newPersonId || null,
+      attachments: task.attachments || [],
+      completed: task.completed || false,
+    };
+
     try {
-      await updateTask(taskId, updatedData);
-      loadTasks();
+      await updateTask(taskId, updatedTask);
+
+      setTasks((prevTasks) =>
+        prevTasks.map((t) => (t.id === taskId ? { ...t, ...updatedTask } : t))
+      );
     } catch (error) {
-      console.error("Failed to edit task:", error);
+      console.error("Edit error:", error);
     }
   };
 
+  const filteredTasks = tasks
+    .filter((task) => {
+      if (filterStatus === "all") return true;
+      return task.status === filterStatus;
+    })
+    .sort((a, b) => {
+      if (sortType === "createdAt-desc") {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      }
+      if (sortType === "createdAt-asc") {
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      }
+      return 0;
+    });
   // todo*: make this component functional by implementing state management and API calls
 
   return (
@@ -227,30 +277,87 @@ const Task = () => {
                 <div className="card-header bg-white d-flex justify-content-between align-items-center">
                   <h5 className="card-title mb-0">Tasks</h5>
                   <div className="btn-group">
-                    <button
-                      className="btn btn-outline-secondary btn-sm"
-                      title="Filter"
-                    >
-                      <i className="bi bi-funnel"></i>
-                    </button>
-                    <button
-                      className="btn btn-outline-secondary btn-sm"
-                      title="Sort"
-                    >
-                      <i className="bi bi-sort-down"></i>
-                    </button>
+                    <div className="dropdown">
+                      <button
+                        className="btn btn-outline-secondary btn-sm dropdown-toggle"
+                        data-bs-toggle="dropdown"
+                      >
+                        <i className="bi bi-funnel"></i>
+                      </button>
+                      <ul className="dropdown-menu">
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setFilterStatus("all")}
+                          >
+                            All
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setFilterStatus("pending")}
+                          >
+                            Pending
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setFilterStatus("in-progress")}
+                          >
+                            In Progress
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setFilterStatus("completed")}
+                          >
+                            Completed
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="dropdown ms-2">
+                      <button
+                        className="btn btn-outline-secondary btn-sm dropdown-toggle"
+                        data-bs-toggle="dropdown"
+                      >
+                        <i className="bi bi-sort-down"></i>
+                      </button>
+                      <ul className="dropdown-menu">
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setSortType("createdAt-desc")}
+                          >
+                            Newest first
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setSortType("createdAt-asc")}
+                          >
+                            Oldest first
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
                 <div className="card-body">
                   <div className="list-group">
                     {/* Task 1 */}
                     <div className="list-group">
-                      {tasks.length === 0 && (
+                      {filteredTasks.length === 0 && (
                         <p className="text-center text-muted">No items yet</p>
                       )}
 
-                      {tasks.length > 0 &&
-                        tasks.map((task) => (
+                      {filteredTasks.length > 0 &&
+                        filteredTasks.map((task) => (
                           <div
                             className="list-group-item list-group-item-action"
                             key={task.id}

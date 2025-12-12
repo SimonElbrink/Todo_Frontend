@@ -17,8 +17,6 @@ const Dashboard = () => {
   const [usersCount, setUsersCount] = useState(0);
   const [showAll, setShowAll] = useState(false);
 
-
-
   useEffect(() => {
     getTasks().then((res) => {
       const normalized = res.data.map((task) => ({
@@ -45,20 +43,18 @@ const Dashboard = () => {
   ).length;
 
   const markComplete = async (taskId) => {
-  try {
-    await toggleTaskCompletion(taskId);
+    try {
+      await toggleTaskCompletion(taskId);
 
-    setTasks((prevTasks) =>
-      prevTasks.map((t) =>
-        t.id === taskId
-          ? { ...t, completed: true, status: "completed" }
-          : t
-      )
-    );
-  } catch (e) {
-    console.error("Completion error:", e);
-  }
-};
+      setTasks((prevTasks) =>
+        prevTasks.map((t) =>
+          t.id === taskId ? { ...t, completed: true, status: "completed" } : t
+        )
+      );
+    } catch (e) {
+      console.error("Completion error:", e);
+    }
+  };
 
   const deleteTask = async (taskId) => {
     try {
@@ -71,17 +67,44 @@ const Dashboard = () => {
 
   const editTask = async (taskId) => {
     const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
     const newTitle = prompt("Edit Task Title:", task.title);
-    if (newTitle) {
-      const updatedTask = { ...task, title: newTitle };
-      try {
-        await updateTask(taskId, updatedTask);
-        setTasks((prevTasks) =>
-          prevTasks.map((t) => (t.id === taskId ? updatedTask : t))
-        );
-      } catch (e) {
-        console.error("Edit error:", e);
-      } 
+    if (!newTitle) return;
+
+    const newDescription = prompt(
+      "Edit Task Description:",
+      task.description || ""
+    );
+
+    const newDueDate = prompt(
+      "Edit Due Date (YYYY-MM-DD):",
+      task.dueDate ? task.dueDate.split("T")[0] : ""
+    );
+
+    const newPersonId = prompt(
+      "Edit Assigned Person ID (leave blank for none):",
+      task.personId || ""
+    );
+
+    const updatedTask = {
+      ...task,
+      title: newTitle,
+      description: newDescription,
+      dueDate: newDueDate,
+      personId: newPersonId || null,
+      attachments: task.attachments || [],
+      completed: task.completed || false,
+    };
+
+    try {
+      await updateTask(taskId, updatedTask);
+
+      setTasks((prevTasks) =>
+        prevTasks.map((t) => (t.id === taskId ? { ...t, ...updatedTask } : t))
+      );
+    } catch (error) {
+      console.error("Edit error:", error);
     }
   };
 
@@ -99,7 +122,6 @@ const Dashboard = () => {
     loadPersons();
   }, []);
 
-
   const today = new Date();
   const sortedTasks = [...tasks].sort(
     (a, b) => new Date(b.dueDate) - new Date(a.dueDate)
@@ -109,17 +131,13 @@ const Dashboard = () => {
     (task) => new Date(task.dueDate) >= today
   );
 
-  const visibleRecentTasks = showAll
-  ? recentTasks
-  : recentTasks.slice(0, 3);
+  const visibleRecentTasks = showAll ? recentTasks : recentTasks.slice(0, 3);
 
   const overdueTasks = sortedTasks.filter(
     (task) => new Date(task.dueDate) < today && task.status !== "completed"
   );
 
-  const visibleOverdueTasks = showAll
-    ? overdueTasks
-    : overdueTasks.slice(0, 3);
+  const visibleOverdueTasks = showAll ? overdueTasks : overdueTasks.slice(0, 3);
 
   const TaskTable = ({ tasks, title, isOverdue }) => (
     <div className="tasks-section">
@@ -130,8 +148,10 @@ const Dashboard = () => {
             <span className="badge bg-danger ms-2">{tasks.length}</span>
           )}
         </h2>
-        <button className="btn btn-link text-decoration-none"
-        onClick={() => setShowAll((prev) => !prev)}>
+        <button
+          className="btn btn-link text-decoration-none"
+          onClick={() => setShowAll((prev) => !prev)}
+        >
           View All
           <i className="bi bi-arrow-right ms-2"></i>
         </button>
