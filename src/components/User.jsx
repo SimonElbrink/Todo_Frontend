@@ -8,7 +8,6 @@ const User = () => {
 
     const [users, setUsers] = useState([]);
     const [formData, setFormData] = useState({name: '', username: '', password: '', email: '', confirmPassword: ''});
-    const [filterMode, setFilterMode] = useState("all")
     const [filterId, setFilterId] = useState("");
     const [errors, setErrors] = useState({});
 
