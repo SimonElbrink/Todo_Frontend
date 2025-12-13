@@ -94,6 +94,14 @@ const User = () => {
 
 
     return (
+        <div className="dashboard-layout">
+            <Sidebar isOpen={false} onClose={() => {}} />
+            <main className="dashboard-main">
+                <Header
+                    title="Users"
+                    subtitle="Manage users"
+                    onToggleSidebar={() => {}}
+                />
         <div className="dashboard-content">
             <div className="row">
                 <div className="col-md-8 mx-auto">
