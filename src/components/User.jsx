@@ -144,9 +144,116 @@ const User = () => {
                             </form>
                         </div>
                     </div>
+
+
+                    <div className="card shadow-sm tasks-list mt-4">
+                        <div className="card-header bg-white d-flex justify-content-between align-items-center">
+                            <h5 className="card-title mb-0">Users</h5>
+                            <div className="btn-group position-relative">
+                                <button className="btn btn-outline-secondary btn-sm"
+                                type="button"
+                                title="filter"
+                                onClick={()=>setIsFilterOpen((prev)=>!prev)}>
+                                    <i className="bi bi-funnel"></i>
+                                </button>
+                                {isFilterOpen && (
+                                    <div className="card shadow-sm filter-section position-absolute filter-fs p-3"
+                                         style={{minWidth: "220px", zIndex: 1050, top:"100%", right:0}}>
+
+                                            <button className="btn btn-sm btn-outline-secondary w-100 mb-2"
+                                            type="button"
+                                            onClick={()=>handleUserFilter("all")}>All</button>
+                                            <div className="text-muted mb-2">User ID</div>
+                                            <div className="d-flex gap-2">
+                                                <input className="form-control form-control-sm filter-input"
+                                                id="fild-for-id"
+                                                value={filterId}
+                                                onChange={(e)=>setFilterId(e.target.value)}/>
+                                                <button type="button"
+                                                        className="btn btn-sm btn-outline-secondary me-1 px-1 py-1"
+                                                        onClick={async()=>{await handleUserFilter("byPerson");
+                                                            setIsFilterOpen(false);
+                                                            setFilterId("");
+                                                        }}>Apply
+                                                </button>
+                                            </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card-body">
+                        <div className="list-group">
+                            {users.map((u, index) => (
+                                <div className="list-group-item list-group-item-action" key={u.id ?? index}>
+                                <div className="d-flex w-100 justify-content-between align-items-center">
+                                    <div className="flex-grow-1">
+                                        <div className="d-flex justify-content-between">
+                                            <p className="mb-1 text-muted small">ID: {u.id}</p>
+                                            {u.isEditing ? (
+                                                <input type="text"
+                                                       className="form-control form-control-sm"
+                                                       value={editName || u.name}
+                                                       onChange={(e)=>setEditName(e.target.value)}/>
+                                            ):(
+                                                <p className="mb-1 text-muted small">{u.name}</p>
+                                            )}
+                                            {u.isEditing ? (
+                                                <input type="text"
+                                                       className="form-control form-control-sm"
+                                                       value={editEmail || u.email}
+                                                       onChange={(e)=>setEditEmail(e.target.value)}/>
+                                            ):(
+                                                <p className="mb-1 text-muted small">{u.email}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="btn-group ms-3">
+                                        <button className="btn btn-online-primary btn-sm"
+                                        title="Edit"
+                                        type="button"
+                                        onClick={()=> toggleUserEditing(index)}>
+                                            <i className="bi bi-pecil"></i>
+                                        </button>
+                                        <button className="btn btn-outline-danger btn-sm"
+                                                title="Delete"
+                                                type="button"
+                                                onClick={() => handleDeleteUser(u.id)}>
+                                            <i className="bi bi-trash"></i>
+                                        </button>
+                                        {u.isEditing && (
+                                            <>
+                                                <button className="btn btn-outline-secondary btn-sm"
+                                                        title="Save"
+                                                        type="button"
+                                                        onClick={() => { const updatedFields = {
+                                                            name: editName || u.name,
+                                                        email: editEmail || u.email};
+                                                            handleUpdateUser(u.id, updatedFields);
+                                                            toggleUserEditing(index)}}>
+                                                    <i className="bi bi-check2-circle">Save</i>
+                                                </button>
+                                                <button type="button"
+                                                        className="btn btn-secondary btn-sm p-1 ms-1"
+                                                        onClick={()=>toggleUserEditing(index)}> Cancel </button>
+                                            </>
+                                        )}
+
+                                    </div>
+                                </div>
+                            </div>
+                            ))}
+
+                        </div>
+                    </div>
+
+
                 </div>
             </div>
         </div>
+      </main>
+    </div>
 
     )
 };
