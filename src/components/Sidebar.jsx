@@ -39,6 +39,12 @@ const Sidebar = ({isOpen, onClose}) => {
             text: "Reports",
             path: "/dashboard/reports",
             roles: ['ROLE_ADMIN'] // Only show for admin
+        },
+        {
+            icon: "bi-person-gear",
+            text: "User Management",
+            path: "/dashboard/users",
+            roles: ['ROLE_ADMIN'] // Only show for admin
         }
     ];
 
