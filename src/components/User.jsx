@@ -48,9 +48,11 @@ const User = () => {
             if(a==="all"){
                 setUsers(await getAllUsers());
                 return;
-            } if(!filterId) return;
-            const user = await getUserById(filterId);
-            setUsers(user ? [user] : []);
+            } else if(a==="byPerson"){
+                const userById = await getUserById(filterId);
+                setUsers(userById ? [userById] : []);
+            }
+
         }catch (err) {
             console.log("Failed to filter user", err);
         }
