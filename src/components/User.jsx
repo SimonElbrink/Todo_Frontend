@@ -141,6 +141,11 @@ const User = () => {
                                     {errors.confirmPassword && <div className="text-danger small">{errors.confirmPassword}</div>}
                                     <input type="password" className="form-control" id="registerConfirmPassword" required value={formData.confirmPassword} onChange={(e)=>setFormData({...formData, confirmPassword:e.target.value})}/>
                                 </div>
+                                <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" className="btn btn-primary" onClick={handleSubmit}>
+                                        <i className="bi bi-plus-lg me-2"></i>
+                                        Add User</button>
+                                </div>
                             </form>
                         </div>
                     </div>
