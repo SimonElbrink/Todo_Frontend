@@ -58,7 +58,7 @@ const User = () => {
         }
     }
 
-    async function handleupdateUser(id, updatedFields) {
+    async function handleUpdateUser(id, updatedFields) {
         try {
             const updatedUser = await updateUser(id, updatedFields);
             setUsers(prev=> prev.map(user=> user.id === updatedUser.id ? updatedUser : user));
