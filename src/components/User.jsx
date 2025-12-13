@@ -10,6 +10,9 @@ const User = () => {
     const [formData, setFormData] = useState({name: '', username: '', password: '', email: '', confirmPassword: ''});
     const [filterId, setFilterId] = useState("");
     const [errors, setErrors] = useState({});
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [editName, setEditName] = useState("");
+    const [editEmail, setEditEmail] = useState("");
 
     useEffect(() => {
         async function fetchData() {
