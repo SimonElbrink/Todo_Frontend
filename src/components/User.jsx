@@ -1,5 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {deleteUser, getAllUsers, getUserById, registerUser, updateUser} from "../services/userService.js";
+import Sidebar from "./Sidebar.jsx";
+import Header from "./Header.jsx";
 
 
 const User = () => {
