@@ -69,17 +69,21 @@ const User = () => {
 
     async function handleSubmit(e) {
         e.preventDefault();
-        const newUser = {name:formData.name, username:formData.username, email:formData.email, password:formData.password, confirmPassword:formData.confirmPassword, isEditing:false};
+        const newUser = {name:formData.name, username:formData.username, email:formData.email, password:formData.password, confirmPassword:formData.confirmPassword};
         const validationErrors = {}
 
         if(newUser.name.trim() === "") validationErrors.name = "Name is required";
         if(newUser.username.trim() === "") validationErrors.username = "Username is required";
         if(newUser.email.trim() === "") validationErrors.email = "Email is required";
-        if(newUser.password.trim() === "") validationErrors.password = "";
-        if(newUser.confirmPassword.trim() === "") validationErrors.confirmPassword = "";
-        if(newUser.password !== newUser.confirmPassword) validationErrors.confirmPassword = "";
+        if(newUser.password.trim() === "") validationErrors.password = "Password is required";
+        if(newUser.confirmPassword.trim() === "") validationErrors.confirmPassword = "Confirm password is required";
+        if(newUser.password !== newUser.confirmPassword) validationErrors.confirmPassword = "Password do not match";
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
 
-        setErrors(validationErrors);
+        setErrors({});
         await registerNewUser(newUser);
         setFormData({name: '', username: '', password: '', email: '', confirmPassword: ''});
     }
