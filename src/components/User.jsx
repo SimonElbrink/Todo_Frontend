@@ -67,6 +67,10 @@ const User = () => {
         }
     }
 
+    function toggleUserEditing(index) {
+        setUsers((prev)=>prev.map((user,i)=>i===index? {...user, isEditing: !user.isEditing}:user));
+    }
+
     async function handleSubmit(e) {
         e.preventDefault();
         const newUser = {name:formData.name, username:formData.username, email:formData.email, password:formData.password, confirmPassword:formData.confirmPassword};
