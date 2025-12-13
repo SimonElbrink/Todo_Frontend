@@ -21,6 +21,7 @@ export function mapToBackend(person) {
         username: person.username,
         email: person.email,
         password: person.password,
+        confirmPassword: person.confirmPassword,
     };
 }
 
