@@ -1,4 +1,5 @@
 const API_BASE = "http://localhost:9090/api/person";
+const REGISTER_API = "http://localhost:9090/api/person/register";
 
 function getAuthToken() {
     const token = localStorage.getItem("auth_token");
@@ -42,7 +43,7 @@ export async function getAllUsers() {
 // register new user
 export async function registerUser(person) {
     const body = mapToBackend(person);
-    const res = await fetch(API_BASE, {
+    const res = await fetch(REGISTER_API, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
