@@ -11,9 +11,11 @@ import {
     getTaskByPersonId,
     getOverdueTasks,
 } from '../services/taskService';
+import {getAllUsers} from "../services/userService.js";
 
 const Task = () => {
     const [tasks, setTasks] = useState([]);
+    const [people, setPeople] = useState([])
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [dueDate, setDueDate] = useState("");
@@ -36,15 +38,24 @@ const Task = () => {
 
 
     useEffect(() => {
-        async function fetchTasks() {
+        async function fetchData() {
             try {
-                const data = await getAllTasks();
-                setTasks(data);
+                const taskData = await getAllTasks();
+                setTasks(taskData);
+                const peop = await getAllUsers();
+                setPeople(peop);
             }catch(error) {
                 console.log("Failed to load tasks", error);
+
+            }
+            try {
+                const peopleData = await getAllUsers();
+                setPeople(peopleData);
+            }catch(error) {
+                console.log("Failed to load people", error);
             }
         }
-        fetchTasks();
+        fetchData();
     }, []);
 
 
@@ -231,10 +242,11 @@ const Task = () => {
                                                 <label htmlFor="todoPerson" className="form-label">Assign to Person</label>
 
                                                 <select className="form-select" id="todoPerson" value={personId} onChange={(e) => {setPersonId(e.target.value);
-                                                setPersonName(e.target.options[e.target.selectedIndex].text);}}>
+                                                setPersonName(people.find(p=>String(p.id)===e.target.value)?.name || "");}}>
                                                     <option value="">-- Select Person (Optional) --</option>
-                                                    <option value="1">Mehrdad Javan</option>
-                                                    <option value="2">Simon Elbrink</option>
+                                                    {people.map((person) => (
+                                                        <option key={person.id} value={person.id}>{person.name}</option>
+                                                    ))}
                                                 </select>
                                             </div>
                                         </div>
