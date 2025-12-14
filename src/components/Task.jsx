@@ -1,12 +1,206 @@
 
-import React from 'react';
+import React, {useRef, useState, useEffect} from 'react';
 import './Task.css';
 import Sidebar from './Sidebar';
 import Header from "./Header.jsx";
+import {
+    createTask,
+    getAllTasks,
+    deleteTask as deleteTaskApi,
+    updateTask as updateTaskApi,
+    getTaskByPersonId,
+    getOverdueTasks,
+} from '../services/taskService';
+import {getAllUsers} from "../services/userService.js";
 
 const Task = () => {
+    const [tasks, setTasks] = useState([]);
+    const [people, setPeople] = useState([])
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [dueDate, setDueDate] = useState("");
+    const [personName, setPersonName] = useState("");
+    const [personId, setPersonId] = useState("");
+    const [attachments, setAttachments] = useState([]);
+    const [errors, setErrors] = useState({});
+    const [, setChosenFiles] = useState("No files chosen");
+    const fileInputRef = useRef(null);
+    const [filterStatus, setFilterStatus] = useState("all");//all /pending /in-process /completed
+    const [sortOrder, setSortOrder] = useState("none");//none, asc, desc
+    const [editTitle, setEditTitle] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [editDueDate, setEditDueDate] = useState("");
+    const [editPersonId, setEditPersonId] = useState("");
+    const [editPersonName, setEditPersonName] = useState("");
+    const [filterPersonId, setFilterPersonId] = useState("");
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+
+
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const taskData = await getAllTasks();
+                setTasks(taskData);
+            }catch(error) {
+                console.log("Failed to load tasks", error);
+            }
+            try {
+                const peopleData = await getAllUsers();
+                setPeople(peopleData);
+            }catch(error) {
+                console.log("Failed to load people", error);
+            }
+        }
+        fetchData();
+    }, []);
+
+
 
     // todo*: make this component functional by implementing state management and API calls
+    async function addTask(newTask) {
+        try {
+            const savedTask = await createTask(newTask);
+            setTasks((prevTasks) => [...prevTasks, savedTask]);
+        } catch (error) {
+            console.log("Failed to save task", error);
+        }
+    }
+
+    async function handleDeleteTask(id) {
+        try {
+            await deleteTaskApi(id);
+            setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+        } catch (error) {
+            console.log("Failed to delete task", error);
+        }
+
+        }
+
+
+    async function handleTaskCompletion(task){
+        const updatedTask = {...task, status: "completed"};
+        try{
+            const savedTask = await updateTaskApi(task.id, updatedTask);
+            setTasks((prevTasks)=>prevTasks.map((prevTask)=>prevTask.id===task.id? savedTask:prevTask));
+        } catch(error){
+            console.log("Failed to complete task", error);
+        }
+    }
+    /*function toggleTaskCompletion(index) {
+        setTasks(
+        (prevTasks) => prevTasks.map((task, i) => (i === index ? {...task, status: "completed"} : task))
+        )
+    }*/
+
+    function toggleTaskEditing(index) {
+        setTasks((prevTasks)=>prevTasks.map((task,i)=>i===index? {...task, isEditing: !task.isEditing}:task));
+    }
+
+    async function handleUpdateTask(id, updatedFields) {
+        try {
+            const updatedTask = await updateTaskApi(id, updatedFields);
+
+            setTasks((prevTasks)=>prevTasks.map((task)=>task.id===id? updatedTask:task));
+        } catch (error) {
+            console.log("Failed to update task", error);
+        }
+    }
+
+    const filteredTasks = tasks.filter((task) => {
+        if (filterStatus === "pending") return task.status === "pending";
+        if (filterStatus === "in-progress") return task.status === "in-progress";
+        if (filterStatus === "completed") return task.status === "completed";
+        return true;
+    })
+
+    async function handleTaskFilter(a){
+        try {
+            if(a==="overdue"){
+                const overDue = await getOverdueTasks();
+                setTasks(overDue);
+            } else if (a==="byPerson"){
+                const taskByPerson = await getTaskByPersonId(filterPersonId);
+                setTasks(taskByPerson);
+            } else {
+                setTasks(await getAllTasks());
+            }
+        } catch (error) {
+            console.log("Failed to filter tasks", error);
+        }
+
+    }
+
+    const sortedTasks = [...filteredTasks].sort((a, b) => {
+        if (sortOrder === "asc") return a.createdAt - b.createdAt;
+        if (sortOrder === "desc") return b.createdAt - a.createdAt;
+        return 0;
+    })
+
+    const statusTask = (status) => {
+        if (status === "pending") return "in-progress";
+        return status;
+    }
+
+    const statusClasses = {
+        pending: "bg-warning text-dark",
+        "in-progress": "bg-primary",
+        completed: "bg-success",
+    };
+
+    function handleAttachment(e) {
+        const files = e.target.files;
+        const newFiles = files ? Array.from(files) : [];
+        (files.length > 0 ? setChosenFiles(files[0].name):"No file chosen");
+        setAttachments((prev) => [...prev, ...newFiles]);
+    }
+
+    function handleClearAttachment() {
+        setAttachments([]);
+        setChosenFiles("No files chosen");
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    }
+
+    async function handleSubmit(e) {
+        const today = new Date().toISOString().split('T')[0];
+        e.preventDefault();
+        const newTask = {title, description, dueDate: dueDate || today, personId, personName: personName || null, attachments, status: personId ? "in-progress":"pending", isEditing: false, createdAt: new Date().toISOString()};
+        const validationErrors = {}
+        if (title.trim() === "") {
+            validationErrors.title = "Title is required"
+        }
+        if (description.trim() === "") {
+            validationErrors.description = "Description is required"
+        }
+
+        if (dueDate.trim() === "") {
+            validationErrors.dueDate = "Due date is required"
+        }
+        if (dueDate !== "" && dueDate < today) {
+            validationErrors.dueDate = "Future date required"
+        }
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
+            setErrors({})
+
+        await addTask(newTask);
+
+            setTitle("");
+            setDescription("");
+            setDueDate("");
+            setPersonId("");
+            setAttachments([]);
+            setChosenFiles("No file chosen")
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+        }
 
     return (
         <div className="dashboard-layout">
@@ -27,38 +221,61 @@ const Task = () => {
                                     <form id="todoForm">
                                         <div className="mb-3">
                                             <label htmlFor="todoTitle" className="form-label">Title</label>
-                                            <input type="text" className="form-control" id="todoTitle" required />
+                                            {errors.title && <div className="text-danger small">{errors.title}</div>}
+                                            <input type="text" className="form-control" id="todoTitle" required value={title} onChange={(e) => setTitle(e.target.value)}/>
                                         </div>
                                         <div className="mb-3">
                                             <label htmlFor="todoDescription" className="form-label">Description</label>
-                                            <textarea className="form-control" id="todoDescription" rows="3"></textarea>
+                                            {errors.description && <div className="text-danger small">{errors.description}</div>}
+                                            <textarea className="form-control" id="todoDescription" rows="3" value={description} onChange={(e) => setDescription(e.target.value)}></textarea>
                                         </div>
                                         <div className="row">
                                             <div className="col-md-6 mb-3">
                                                 <label htmlFor="todoDueDate" className="form-label">Due Date</label>
-                                                <input type="datetime-local" className="form-control" id="todoDueDate" />
+                                                {errors.dueDate && <div className="text-danger small">{errors.dueDate}</div>}
+                                                <input type="datetime-local" className="form-control" id="todoDueDate" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
                                             </div>
                                             <div className="col-md-6 mb-3">
                                                 <label htmlFor="todoPerson" className="form-label">Assign to Person</label>
-                                                <select className="form-select" id="todoPerson">
+
+                                                <select className="form-select"
+                                                        id="todoPerson"
+                                                        value={personId}
+                                                        onChange={(e) => {
+                                                            const id = e.target.value;
+                                                            setPersonId(id);
+                                                            setPersonName(people.find(p=>String(p.id) === id)?.name || "");}}>
                                                     <option value="">-- Select Person (Optional) --</option>
-                                                    <option value="1">Mehrdad Javan</option>
-                                                    <option value="2">Simon Elbrink</option>
+                                                    {people.map((person) => (
+                                                        <option key={person.id} value={String(person.id)}>{person.name}</option>
+                                                    ))}
                                                 </select>
                                             </div>
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-label">Attachments</label>
                                             <div className="input-group mb-3">
-                                                <input type="file" className="form-control" id="todoAttachments" multiple />
-                                                <button className="btn btn-outline-secondary" type="button">
+                                                <input type="file" className="form-control" id="todoAttachments" multiple onChange={handleAttachment} ref={fileInputRef}/>
+                                                <button className="btn btn-outline-secondary" type="button" onClick={handleClearAttachment}>
                                                     <i className="bi bi-x-lg"></i>
                                                 </button>
                                             </div>
-                                            <div className="file-list" id="attachmentPreview"></div>
+                                            <div className="file-list" id="attachmentPreview">
+                                                {attachments.length===0 ? (
+                                                    <span className="text-muted small">No files selected</span>
+                                                ) : (
+                                                    <ul className="list-unstyled mb-0">
+                                                        {attachments.map((attachment, index) => (
+                                                            <li key={index}>
+                                                                <span className="text-muted small">{attachment.name}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                                            <button type="submit" className="btn btn-primary">
+                                            <button type="submit" className="btn btn-primary" onClick={handleSubmit}>
                                                 <i className="bi bi-plus-lg me-2"></i>
                                                 Add Task
                                             </button>
@@ -70,49 +287,208 @@ const Task = () => {
                             <div className="card shadow-sm tasks-list mt-4">
                                 <div className="card-header bg-white d-flex justify-content-between align-items-center">
                                     <h5 className="card-title mb-0">Tasks</h5>
-                                    <div className="btn-group">
-                                        <button className="btn btn-outline-secondary btn-sm" title="Filter">
+                                    <div className="btn-group position-relative">
+                                        <button className="btn btn-outline-secondary btn-sm"
+                                                type="button"
+                                                title="Filter"
+                                                onClick={()=>setIsFilterOpen((prevState)=>!prevState)}>
                                             <i className="bi bi-funnel"></i>
-                                        </button>
-                                        <button className="btn btn-outline-secondary btn-sm" title="Sort">
+                                            </button>
+                                        {isFilterOpen && (
+                                            <div className="card shadow-sm filter-section position-absolute filter-fs "
+                                            style={{minWidth: "220px", zIndex: 1050, top:"100%", right:0}}>
+                                                <div className="list-group list-group-flush small">
+                                                    <div className="list-group-item text-muted fw-bold py-1">
+                                                        Source
+                                                    </div>
+                                                    <button type="button"
+                                                    className="list-group-item list-group-item-action py-1"
+                                                    onClick={async()=> {await handleTaskFilter("all");
+                                                    setIsFilterOpen(false)}}>All tasks
+                                                    </button>
+
+                                                    <button type="button"
+                                                    className="list-group-item list-group-item-action py-1"
+                                                    onClick={async()=> {await handleTaskFilter("overdue");
+                                                    setIsFilterOpen(false)}}>Overdue tasks
+                                                    </button>
+
+                                                    <div className="text-muted mb-1 py-1 ps-3">Task by person</div>
+                                                    <div className="d-flex gap-2">
+                                                    <input type="number"
+                                                           className="form-control form-control-sm ps-3 ms-3 py-1 filter-input"
+                                                           id="fild-for-id"
+                                                           value={filterPersonId}
+                                                           onChange={(e)=> setFilterPersonId(e.target.value)}/>
+                                                    <button type="button"
+                                                    className="btn btn-sm btn-outline-secondary me-2 px-1 py-1 filter-input"
+                                                    onClick={async()=>{await handleTaskFilter("byPerson");
+                                                        setIsFilterOpen(false);
+                                                        setFilterPersonId("");
+                                                    }}>Apply
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="list-group-item text-muted fw-bold py-1">
+                                                        Status
+                                                    </div>
+                                                    <button type="button"
+                                                    className="list-group-item list-group-item-action py-1"
+                                                    onClick={()=>{
+                                                        setFilterStatus("all");
+                                                        setIsFilterOpen(false);
+                                                    }}>All statuses
+                                                    </button>
+                                                    <button
+                                                    type="button"
+                                                    className="list-group-item list-group-item-action py-1"
+                                                    onClick={()=>{
+                                                        setFilterStatus("pending");
+                                                        setIsFilterOpen(false);
+                                                    }}>Pending
+                                                    </button>
+                                                    <button
+                                                    type="button"
+                                                    className="list-group-item list-group-item-action py-1"
+                                                    onClick={()=>{
+                                                        setFilterStatus("in-progress");
+                                                        setIsFilterOpen(false);
+                                                    }}>In-progress
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="list-group-item list-group-item-action py-1"
+                                                        onClick={()=>{
+                                                            setFilterStatus("completed");
+                                                            setIsFilterOpen(false);
+                                                        }}>Completed
+                                                    </button>
+
+                                                </div>
+
+                                            </div>
+                                        )}
+
+                                        <button className="btn btn-outline-secondary btn-sm"
+                                                title="Sort"
+                                                type="button"
+                                                onClick={() => setSortOrder(sortOrder === "none" ? "asc" : sortOrder === "asc" ? "desc" : "none")}>
                                             <i className="bi bi-sort-down"></i>
+                                            <span className="ms-2 badge text-bg-light">
+                                                {sortOrder === 'none' ? 'No sort' : sortOrder === 'asc' ? '↑' : '↓'}
+                                                </span>
                                         </button>
                                     </div>
                                 </div>
                                 <div className="card-body">
                                     <div className="list-group">
                                         {/* Task 1 */}
-                                        <div className="list-group-item list-group-item-action">
+                                        {sortedTasks.map((task, index) => (
+                                        <div className="list-group-item list-group-item-action"
+                                        key={task.id ?? index}>
                                             <div className="d-flex w-100 justify-content-between align-items-start">
                                                 <div className="flex-grow-1">
                                                     <div className="d-flex justify-content-between">
-                                                        <h6 className="mb-1">Complete Project Documentation</h6>
-                                                        <small className="text-muted ms-2">Created: 2025-08-07</small>
+                                                        {task.isEditing ? (
+                                                            <input type="text" className="form-control form-control-sm"
+                                                                   value={editTitle || task.title}
+                                                            onChange={(e) => setEditTitle(e.target.value)}/>
+                                                        ) : (
+                                                        <h6 className="mb-1">{task.title}</h6>
+                                                        )}
+                                                        <small className="text-muted ms-2">Created: {task.createdAt}</small>
                                                     </div>
-                                                    <p className="mb-1 text-muted small">Write comprehensive documentation for the new features</p>
+                                                    {task.isEditing ? (
+                                                        <input type="text" className="form-control form-control-sm"
+                                                        value={editDescription || task.description}
+                                                        onChange={(e) => setEditDescription(e.target.value)}/>
+                                                    ) : (
+                                                        <p className="mb-1 text-muted small">{task.description}</p>
+                                                    )}
+
                                                     <div className="d-flex align-items-center flex-wrap">
-                                                        <small className="text-muted me-2">
-                                                            <i className="bi bi-calendar-event"></i> Due: 2025-08-15
-                                                        </small>
-                                                        <span className="badge bg-info me-2">
-                                                            <i className="bi bi-person"></i> Mehrdad Javan
+                                                        {task.isEditing ? (
+                                                            <input type="datetime-local" className="form-control form-control-sm"
+                                                            value={editDueDate || task.dueDate}
+                                                            onChange={(e) => setEditDueDate(e.target.value)}/>
+                                                        ) : (
+                                                            <small className="text-muted me-2">
+                                                                <i className="bi bi-calendar-event"></i> Due: {task.dueDate.split('T')[0]}
+                                                            </small>
+                                                        )}
+                                                        {task.isEditing ? (
+                                                            <select className="form-control form-control-sm"
+                                                            value={editPersonId || String(task.personId || "")}
+                                                            onChange={(e) => {
+                                                                setEditPersonId(e.target.value);
+                                                                setEditPersonName(people.find(p => String(p.id) === e.target.value)?.name || "");
+                                                            }}>
+                                                                <option value="">-- Select Person (Optional) --</option>
+                                                                {people.map((person) => (
+                                                                    <option key={person.id} value={String(person.id)}>{person.name}</option>
+                                                                    ))}
+                                                                </select>
+                                                            ) : (
+                                                            <span className="badge bg-info me-2">
+                                                            <i className="bi bi-person"></i>{people.find(p=>String(p.id)===String(task.personId))?.name || "No person assigned"}
                                                         </span>
-                                                        <span className="badge bg-warning text-dark me-2">pending</span>
+                                                        )}
+
+                                                        <span className={`badge me-2 ${statusClasses[task.status] || "bg-secondary"}`}
+                                                        style={{cursor:"pointer"}}
+                                                        onClick={()=> {
+                                                            setTasks(prevTasks=>prevTasks.map((prevTask,i)=>i===index? {...prevTask, status: statusTask(prevTask.status)}:prevTask));
+                                                            }
+
+                                                        }>{task.status}</span>
                                                     </div>
                                                 </div>
                                                 <div className="btn-group ms-3">
-                                                    <button className="btn btn-outline-success btn-sm" title="Complete">
+                                                    <button className="btn btn-outline-success btn-sm"
+                                                            title="Complete"
+                                                            type="button"
+                                                            onClick={() => handleTaskCompletion(task)}>
                                                         <i className="bi bi-check-lg"></i>
                                                     </button>
-                                                    <button className="btn btn-outline-primary btn-sm" title="Edit">
+                                                    <button className="btn btn-outline-primary btn-sm"
+                                                            title="Edit"
+                                                            type="button"
+                                                            onClick={() => toggleTaskEditing(index)}>
                                                         <i className="bi bi-pencil"></i>
                                                     </button>
-                                                    <button className="btn btn-outline-danger btn-sm" title="Delete">
+                                                    <button className="btn btn-outline-danger btn-sm"
+                                                            title="Delete"
+                                                            type="button"
+                                                            onClick={() => handleDeleteTask(task.id)}>
                                                         <i className="bi bi-trash"></i>
                                                     </button>
+                                                    {task.isEditing && (
+                                                        <>
+                                                        <button className="btn btn-outline-secondary btn-sm"
+                                                                title="Save"
+                                                                type="button"
+                                                                onClick={() => { const updatedFields = {
+                                                                    title: editTitle || task.title,
+                                                                    description: editDescription || task.description,
+                                                                    dueDate: editDueDate || task.dueDate,
+                                                                    personId: editPersonId || task.personId,
+                                                                    personName: editPersonName || task.personName,
+                                                                    status: task.status,
+                                                                    attachments:task.attachments,};
+                                                                    handleUpdateTask(task.id, updatedFields);
+                                                                    toggleTaskEditing(index)}}>
+                                                            <i className="bi bi-check2-circle">Save</i>
+                                                        </button>
+                                                        <button type="button"
+                                                        className="btn btn-secondary btn-sm p-1 ms-1"
+                                                        onClick={()=>toggleTaskEditing(index)}> Cancel </button>
+                                                        </>
+                                                    )}
                                                 </div>
+
                                             </div>
                                         </div>
+                                        ))}
 
                                         {/* Task 2 */}
                                         <div className="list-group-item list-group-item-action">
