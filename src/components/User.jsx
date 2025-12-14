@@ -63,7 +63,7 @@ const User = () => {
     async function handleUpdateUser(id, updatedFields) {
         try {
             const updatedUser = await updateUser(id, updatedFields);
-            setUsers(prev=> prev.map(user=> user.id === updatedUser.id ? updatedUser : user));
+            setUsers(prev=> prev.map(user=> user.id === id ? {...user, ...updatedFields} : user));
         } catch (err) {
             console.log("Failed to update user", err);
         }
