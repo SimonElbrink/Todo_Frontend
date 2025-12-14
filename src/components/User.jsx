@@ -215,11 +215,11 @@ const User = () => {
                                         </div>
                                     </div>
                                     <div className="btn-group ms-3">
-                                        <button className="btn btn-online-primary btn-sm"
+                                        <button className="btn btn-outline-primary btn-sm"
                                         title="Edit"
                                         type="button"
                                         onClick={()=> toggleUserEditing(index)}>
-                                            <i className="bi bi-pecil"></i>
+                                            <i className="bi bi-pencil"></i>
                                         </button>
                                         <button className="btn btn-outline-danger btn-sm"
                                                 title="Delete"
@@ -237,7 +237,7 @@ const User = () => {
                                                         email: editEmail || u.email};
                                                             handleUpdateUser(u.id, updatedFields);
                                                             toggleUserEditing(index)}}>
-                                                    <i className="bi bi-check2-circle">Save</i>
+                                                    <i className="bi bi-check2-circle"></i>Save
                                                 </button>
                                                 <button type="button"
                                                         className="btn btn-secondary btn-sm p-1 ms-1"
