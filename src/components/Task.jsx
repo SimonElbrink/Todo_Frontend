@@ -42,11 +42,8 @@ const Task = () => {
             try {
                 const taskData = await getAllTasks();
                 setTasks(taskData);
-                const peop = await getAllUsers();
-                setPeople(peop);
             }catch(error) {
                 console.log("Failed to load tasks", error);
-
             }
             try {
                 const peopleData = await getAllUsers();
@@ -241,11 +238,16 @@ const Task = () => {
                                             <div className="col-md-6 mb-3">
                                                 <label htmlFor="todoPerson" className="form-label">Assign to Person</label>
 
-                                                <select className="form-select" id="todoPerson" value={personId} onChange={(e) => {setPersonId(e.target.value);
-                                                setPersonName(people.find(p=>String(p.id)===e.target.value)?.name || "");}}>
+                                                <select className="form-select"
+                                                        id="todoPerson"
+                                                        value={personId}
+                                                        onChange={(e) => {
+                                                            const id = e.target.value;
+                                                            setPersonId(id);
+                                                            setPersonName(people.find(p=>String(p.id) === id)?.name || "");}}>
                                                     <option value="">-- Select Person (Optional) --</option>
                                                     {people.map((person) => (
-                                                        <option key={person.id} value={person.id}>{person.name}</option>
+                                                        <option key={person.id} value={String(person.id)}>{person.name}</option>
                                                     ))}
                                                 </select>
                                             </div>
@@ -416,16 +418,19 @@ const Task = () => {
                                                         )}
                                                         {task.isEditing ? (
                                                             <select className="form-control form-control-sm"
-                                                            value={editPersonId || task.personId}
-                                                            onChange={(e) => {setEditPersonId(e.target.value);
-                                                            setEditPersonName(e.target.options[e.target.selectedIndex].text);}}>
+                                                            value={editPersonId || String(task.personId || "")}
+                                                            onChange={(e) => {
+                                                                setEditPersonId(e.target.value);
+                                                                setEditPersonName(people.find(p => String(p.id) === e.target.value)?.name || "");
+                                                            }}>
                                                                 <option value="">-- Select Person (Optional) --</option>
-                                                                <option value="1">Mehrdad Javan</option>
-                                                                <option value="2">Simon Elbrink</option>
+                                                                {people.map((person) => (
+                                                                    <option key={person.id} value={String(person.id)}>{person.name}</option>
+                                                                    ))}
                                                                 </select>
-                                                       ) : (
+                                                            ) : (
                                                             <span className="badge bg-info me-2">
-                                                            <i className="bi bi-person"></i>{task.personName || "Unassigned"}
+                                                            <i className="bi bi-person"></i>{people.find(p=>String(p.id)===String(task.personId))?.name || "No person assigned"}
                                                         </span>
                                                         )}
 
