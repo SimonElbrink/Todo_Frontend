@@ -88,13 +88,13 @@ const Dashboard = () => {
     );
 
     const updatedTask = {
-      ...task,
-      title: newTitle,
-      description: newDescription,
-      dueDate: newDueDate,
-      personId: newPersonId || null,
-      attachments: task.attachments || [],
-      completed: task.completed || false,
+       ...task,
+    title: newTitle.trim(),
+    description: newDescription || null,
+    dueDate: newDueDate ? `${newDueDate}T00:00:00` : null,
+    personId: newPersonId ? Number(newPersonId) : null,
+    completed: task.completed ?? false,
+    attachments: task.attachments || []
     };
 
     try {

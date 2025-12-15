@@ -11,6 +11,7 @@ import {
 const Task = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortType, setSortType] = useState("createdAt-desc");
+  const [editingTaskId, setEditingTaskId] = useState(null);
   const [tasks, setTasks] = React.useState([
     {
       id: 1,
@@ -68,10 +69,17 @@ const Task = () => {
     });
   };
 
-  const handleAddTask = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      await createTask(form);
+      if (editingTaskId) {
+        await updateTask(editingTaskId, form);
+        setEditingTaskId(null);
+      } else {
+        await createTask(form);
+      }
+
       setForm({
         title: "",
         description: "",
@@ -81,7 +89,7 @@ const Task = () => {
       });
       loadTasks();
     } catch (error) {
-      console.error("Failed to create task:", error);
+      console.error("Failed to save task:", error);
     }
   };
 
@@ -95,57 +103,27 @@ const Task = () => {
   };
 
   const handleCompleteTask = async (taskId) => {
-    try {
-      const taskToUpdate = tasks.find((task) => task.id === taskId);
-      await updateTask(taskId, { ...taskToUpdate, status: "completed" });
-      loadTasks();
-    } catch (error) {
-      console.error("Failed to complete task:", error);
-    }
+   try {
+    const taskToUpdate = tasks.find((task) => task.id === taskId);
+    await updateTask(taskId, { ...taskToUpdate, status: "completed" });
+    loadTasks();
+  } catch (error) {
+    console.error("Failed to complete task:", error);
+  }
   };
 
-  const handleEditTask = async (taskId) => {
-    const task = tasks.find((t) => t.id === taskId);
-    if (!task) return;
-
-    const newTitle = prompt("Edit Task Title:", task.title);
-    if (!newTitle) return;
-
-    const newDescription = prompt(
-      "Edit Task Description:",
-      task.description || ""
-    );
-
-    const newDueDate = prompt(
-      "Edit Due Date (YYYY-MM-DD):",
-      task.dueDate ? task.dueDate.split("T")[0] : ""
-    );
-
-    const newPersonId = prompt(
-      "Edit Assigned Person ID (leave blank for none):",
-      task.personId || ""
-    );
-
-    const updatedTask = {
-      ...task,
-      title: newTitle,
-      description: newDescription,
-      dueDate: newDueDate,
-      personId: newPersonId || null,
+  const handleEditTask = (task) => {
+    setForm({
+      title: task.title,
+      description: task.description || "",
+      dueDate: task.dueDate ? task.dueDate.split("T")[0] : "",
+      assignedTo: task.assignedTo || "",
       attachments: task.attachments || [],
-      completed: task.completed || false,
-    };
-
-    try {
-      await updateTask(taskId, updatedTask);
-
-      setTasks((prevTasks) =>
-        prevTasks.map((t) => (t.id === taskId ? { ...t, ...updatedTask } : t))
-      );
-    } catch (error) {
-      console.error("Edit error:", error);
-    }
+    });
+    setEditingTaskId(task.id);
   };
+
+ 
 
   const filteredTasks = tasks
     .filter((task) => {
@@ -179,7 +157,7 @@ const Task = () => {
               <div className="card shadow-sm task-form-section">
                 <div className="card-body">
                   <h2 className="card-title mb-4">Add New Task</h2>
-                  <form id="todoForm">
+                  <form id="todoForm" onSubmit={handleSubmit}>
                     <div className="mb-3">
                       <label htmlFor="todoTitle" className="form-label">
                         Title
@@ -263,10 +241,11 @@ const Task = () => {
                       <button
                         type="submit"
                         className="btn btn-primary"
-                        onClick={handleAddTask}
+                        onClick={handleSubmit}
                       >
                         <i className="bi bi-plus-lg me-2"></i>
-                        Add Task
+                            {editingTaskId ? "Save Changes" : "Add Task"}
+
                       </button>
                     </div>
                   </form>
@@ -351,6 +330,55 @@ const Task = () => {
                 <div className="card-body">
                   <div className="list-group">
                     {/* Task 1 */}
+                    {editingTask && (
+                      <div className="card mb-3 shadow-sm">
+                        <div className="card-body">
+                          <h5>Edit Task</h5>
+                          <form onSubmit={handleSaveEdit}>
+                            <input
+                              type="text"
+                              id="title"
+                              value={editingTask.title}
+                              onChange={handleEditInput}
+                              className="form-control mb-2"
+                              required
+                            />
+                            <textarea
+                              id="description"
+                              value={editingTask.description}
+                              onChange={handleEditInput}
+                              className="form-control mb-2"
+                            />
+                            <input
+                              type="datetime-local"
+                              id="dueDate"
+                              value={editingTask.dueDate}
+                              onChange={handleEditInput}
+                              className="form-control mb-2"
+                            />
+                            <input
+                              type="text"
+                              id="assignedTo"
+                              value={editingTask.assignedTo}
+                              onChange={handleEditInput}
+                              className="form-control mb-2"
+                            />
+                            <div className="d-flex justify-content-end">
+                              <button
+                                type="button"
+                                className="btn btn-secondary me-2"
+                                onClick={() => setEditingTask(null)}
+                              >
+                                Cancel
+                              </button>
+                              <button type="submit" className="btn btn-primary">
+                                Save
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    )}
                     <div className="list-group">
                       {filteredTasks.length === 0 && (
                         <p className="text-center text-muted">No items yet</p>
@@ -402,7 +430,7 @@ const Task = () => {
                                 </button>
                                 <button
                                   className="btn btn-outline-primary btn-sm"
-                                  onClick={() => handleEditTask(task.id, task)}
+                                  onClick={() => handleEditTask(task)}
                                   title="Edit"
                                 >
                                   <i className="bi bi-pencil"></i>
