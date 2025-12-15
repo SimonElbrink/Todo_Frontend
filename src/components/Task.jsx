@@ -72,6 +72,9 @@ const Task = () => {
             await deleteTaskApi(id);
             setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
         } catch (error) {
+            if(error.message === "FORBIDDEN") {
+                alert("Only administrators can delete items. Please contact an admin.")
+            }
             console.log("Failed to delete task", error);
         }
 
