@@ -80,6 +80,7 @@ export async function deleteTask(id) {
         ...getAuthToken()},
     });
     if (!res.ok) {
+        if(res.status === 400) throw new Error("FORBIDDEN");
         throw new Error("Failed to delete task");
     }
 }
